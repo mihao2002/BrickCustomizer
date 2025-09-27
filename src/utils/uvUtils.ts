@@ -38,8 +38,8 @@ export function assignUVsAndGenerateTemplate(
         bottom: (v: THREE.Vector3) => new THREE.Vector2(regions.bottom.x + (v.x - box.min.x), regions.bottom.y + (v.z - box.min.z)),
         front:  (v: THREE.Vector3) => new THREE.Vector2(regions.front.x + (v.x - box.min.x), regions.front.y + (H - (v.y - box.min.y))),
         back:   (v: THREE.Vector3) => new THREE.Vector2(regions.back.x + (L - (v.x - box.min.x)), regions.back.y + (H - (v.y - box.min.y))),
-        left:   (v: THREE.Vector3) => new THREE.Vector2(regions.left.x + (v.z - box.min.z), regions.left.y + (H - (v.y - box.min.y))),
-        right:  (v: THREE.Vector3) => new THREE.Vector2(regions.right.x + (W - (v.z - box.min.z)), regions.right.y + (H - (v.y - box.min.y)))
+        left:   (v: THREE.Vector3) => new THREE.Vector2(regions.left.x + (box.max.z - v.z), regions.left.y + (H - (v.y - box.min.y))),
+        right:  (v: THREE.Vector3) => new THREE.Vector2(regions.right.x + (W - (box.max.z - v.z)), regions.right.y + (H - (v.y - box.min.y)))
     };
 
     const referencePoints: Record<ViewName, (v: THREE.Vector3) => THREE.Vector3> = {

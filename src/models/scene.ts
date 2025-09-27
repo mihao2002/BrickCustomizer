@@ -1,0 +1,7 @@
+export interface SceneState {
+  color: string;
+  texture?: string; // base64 or URL
+  background: string;
+  transparent: boolean;
+  model: string;    // path to LDraw part
+}
