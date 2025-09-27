@@ -9,6 +9,7 @@ import { assignUVsAndGenerateTemplate } from "./uvUtils";
 const App: React.FC = () => {
   const mountRef = useRef<HTMLDivElement>(null);
   const [uvMapDataURL, setUvMapDataURL] = useState<string>("");
+  const [mesh, setMesh] = useState<THREE.Mesh | null>(null);
 
   useEffect(() => {
     if (!mountRef.current) return;
@@ -40,13 +41,8 @@ const App: React.FC = () => {
     scene.add(dirLight);
 
     const loader = new LDrawLoader();
-    loader.setConditionalLineMaterial( LDrawConditionalLineMaterial );
-    
+    loader.setConditionalLineMaterial(LDrawConditionalLineMaterial);
     loader.setPartsLibraryPath("/LDraw/");
-
-    // Create the conditional line material
-    // const conditionalMaterial = new ConditionalLineMaterial();
-    // loader.setConditionalLineMaterial(conditionalMaterial);
 
     loader.load(
       "/LDraw/3001.dat",
@@ -71,6 +67,7 @@ const App: React.FC = () => {
         mergedMesh.rotation.x = Math.PI;
         scene.add(mergedMesh);
 
+        setMesh(mergedMesh); // store mesh reference
         assignUVsAndGenerateTemplate(mergedMesh, setUvMapDataURL);
       },
       undefined,
@@ -89,24 +86,55 @@ const App: React.FC = () => {
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
+
+    return () => {
+      mountRef.current?.removeChild(renderer.domElement);
+    };
   }, []);
+
+  const handleTextureUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !mesh) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const textureLoader = new THREE.TextureLoader();
+      const texture = textureLoader.load(event.target?.result as string, () => {
+        if (mesh) {
+          mesh.material = new THREE.MeshStandardMaterial({
+            map: texture,
+            color: 0xffffff,
+          });
+          mesh.material.needsUpdate = true;
+        }
+      });
+      texture.flipY = false;
+      texture.minFilter = THREE.NearestFilter;
+      texture.generateMipmaps = false;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDownloadUV = () => {
+    if (uvMapDataURL) {
+      const link = document.createElement("a");
+      link.href = uvMapDataURL;
+      link.download = "uvmap.png";
+      link.click();
+    }
+  };
 
   return (
     <div>
       <div ref={mountRef} style={{ width: "100vw", height: "100vh" }}></div>
-      <input type="file" id="textureInput" accept="image/*" />
-      <button
-        onClick={() => {
-          if (uvMapDataURL) {
-            const link = document.createElement("a");
-            link.href = uvMapDataURL;
-            link.download = "uvmap.png";
-            link.click();
-          }
-        }}
-      >
-        Download UV Map
-      </button>
+      <div style={{ position: "absolute", top: 10, left: 10, zIndex: 10 }}>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleTextureUpload}
+        />
+        <button onClick={handleDownloadUV}>Download UV Map</button>
+      </div>
     </div>
   );
 };
