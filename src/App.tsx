@@ -42,10 +42,10 @@ const App: React.FC = () => {
 
     const loader = new LDrawLoader();
     loader.setConditionalLineMaterial(LDrawConditionalLineMaterial);
-    loader.setPartsLibraryPath("/LDraw/");
+    loader.setPartsLibraryPath("LDraw/");
 
     loader.load(
-      "/LDraw/3001.dat",
+      "LDraw/3001.dat",
       (group) => {
         const geometries: THREE.BufferGeometry[] = [];
         group.traverse((child) => {
