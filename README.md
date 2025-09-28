@@ -1,73 +1,66 @@
-# React + TypeScript + Vite
+# BrickCustomizer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+BrickCustomizer is a web-based tool for customizing LEGO® models. It allows you to:  
+- Load and preview **LDraw models**  
+- Apply custom **colors, textures, and transparency**  
+- Adjust the **background and lighting**  
+- View and export **UV maps** for texture customization  
+- Save and upload scene state as JSON  
 
-Currently, two official plugins are available:
+## Getting Started
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Prerequisites
+- [Node.js](https://nodejs.org/) (>= 18.x recommended)  
+- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)  
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Installation
+```bash
+git clone https://github.com/your-username/BrickCustomizer.git
+cd BrickCustomizer
+npm install
+# or
+yarn install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Build & Development
+```bash
+npm run build
+npm run preview
 ```
+
+### Local Deployment
+```bash
+npm run dev
+```
+The app will be available at http://localhost:5173.
+
+### Usage
+Toolbar
+- import or export the current scene
+- Upload scene customization
+- Generate UV map template
+
+Controls Panel
+- Select a model from predefined options
+- Set model color
+- Set background color
+- Toggle transparency
+- Set texture through image file
+
+Viewer
+- Rotate, pan, and zoom the 3D model
+- Automatically generates a UV map when the mesh is ready
+
+Status Bar
+- Displays system messages, errors, and success notifications
+
+### Project Structure
+```
+src/
+  components/     # React components (App, Toolbar, Viewer, ControlsPanel, StatusBar)
+  models/         # Type definitions (SceneState, Status types, etc.)
+  services/       # Service API
+  utils/          # UV mapping, validation helpers
+  main.tsx        # Main app
+```
+
