@@ -1,34 +1,36 @@
 import React from "react";
-import type { SceneState } from "../models/Scene";
+import type { SceneState } from "../models/SceneState";
+import type { Status, StatusType } from "../models/Status";
 
 interface ControlsPanelProps {
   scene: SceneState;
+  onDescriptionChange: (text: string) => void;
   onColorChange: (color: string) => void;
   onBackgroundChange: (color: string) => void;
   onTransparentChange: (transparent: boolean) => void;
   onTextureUpload: (texture?: string) => void;
   onModelChange: (model: string) => void;
+  onStatus: (status:Status) => void;
 }
 
 const ControlsPanel: React.FC<ControlsPanelProps> = ({
   scene,
+  onDescriptionChange,
   onColorChange,
   onBackgroundChange,
   onTransparentChange,
   onTextureUpload,
-  onModelChange
+  onModelChange,
+  onStatus
 }) => {
   const handleTextureUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file)
-    {
-      onTextureUpload(undefined);
-      return;
-    }
+    if (!file) return;
 
     const reader = new FileReader();
     reader.onload = () => {
       onTextureUpload(reader.result as string);
+      onStatus({message:`Texture loaded from ${file.name}`})
     };
     reader.readAsDataURL(file);
   };
@@ -37,8 +39,19 @@ const ControlsPanel: React.FC<ControlsPanelProps> = ({
     <div className="controlspanel">
       <span className="region">
         <label className="header">
+          Description:
+          <input className="description"
+            type="text"
+            value={scene.description}
+            onChange={(e) => onDescriptionChange(e.target.value)}
+            placeholder="Describe your customization"
+          />
+        </label>
+      </span>
+      <span className="region">
+        <label className="header">
           Model:
-          <select onChange={(e) => onModelChange(e.target.value)}>
+          <select onChange={(e) => onModelChange(e.target.value)} value={scene.model}>
             <option value="LDraw/3001.dat">3001</option>
             <option value="LDraw/3062a.dat">3062a</option>
           </select>
@@ -75,9 +88,30 @@ const ControlsPanel: React.FC<ControlsPanelProps> = ({
         </label>
       </span>
       <span className="region">
+
         <label className="header">
           Texture:
-          <input type="file" accept="image/*" onChange={handleTextureUpload} />
+          <input
+            id="textureInput"
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleTextureUpload(e);
+            }}
+          />
+          <input
+            type="checkbox"
+            checked={!!scene.texture}
+            onChange={(e) => {
+              if (e.target.checked && !scene.texture) {
+                document.getElementById("textureInput")?.click();
+              } else if (!e.target.checked) {
+                onTextureUpload(undefined);
+              }
+            }}
+          />
         </label>
       </span>
     </div>

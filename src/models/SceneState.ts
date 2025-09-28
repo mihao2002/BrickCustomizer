@@ -1,4 +1,5 @@
 export interface SceneState {
+  description: string;
   color: string;
   texture?: string; // base64 or URL
   background: string;

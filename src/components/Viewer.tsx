@@ -4,8 +4,8 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { LDrawLoader } from "three/examples/jsm/loaders/LDrawLoader.js";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { LDrawConditionalLineMaterial } from "three/examples/jsm/materials/LDrawConditionalLineMaterial.js";
-import { assignUVsAndGenerateTemplate } from "../utils/uvUtils";
-import type { SceneState } from "../models/Scene";
+import { assignUVsAndGenerateTemplate } from "../utils/UVUtils";
+import type { Status } from "../models/Status";
 
 interface ViewerProps {
   modelPath: string;
@@ -14,6 +14,7 @@ interface ViewerProps {
   transparent: boolean;
   texture?: string;
   onMeshReady: (mesh: THREE.Mesh, uvMapDataURL: string) => void;
+  onStatus: (status:Status) => void;
 }
 
 const Viewer: React.FC<ViewerProps> = ({
@@ -22,13 +23,14 @@ const Viewer: React.FC<ViewerProps> = ({
   background,
   transparent,
   texture,
-  onMeshReady
+  onMeshReady,
+  onStatus
 }) => {
   const mountRef = useRef<HTMLDivElement>(null);
-  const sceneRef = useRef<THREE.Scene>();
-  const meshRef = useRef<THREE.Mesh>();
-  const rendererRef = useRef<THREE.WebGLRenderer>();
-  const cameraRef = useRef<THREE.PerspectiveCamera>();
+  const sceneRef = useRef<THREE.Scene>(null);
+  const meshRef = useRef<THREE.Mesh>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer>(null);
+  const cameraRef = useRef<THREE.PerspectiveCamera>(null);
 
   // scene setup (run once)
   useEffect(() => {
@@ -140,7 +142,10 @@ const Viewer: React.FC<ViewerProps> = ({
         );
       },
       undefined,
-      (error) => console.error("Error loading part:", error)
+      (error) => onStatus({
+        message: `Error loading part: ${error}`,
+        type: "error"
+      })
     );
   }, [modelPath]);
 

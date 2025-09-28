@@ -1,17 +1,18 @@
 import React, { useState } from "react";
-import type { SceneState } from "../models/Scene";
-import { deserializeScene, serializeScene } from "../services/SceneService";
+import type { SceneState } from "../models/SceneState";
+import { deserializeScene, serializeScene } from "../utils/SceneUtils";
 import { uploadScene } from "../services/ApiService";
+import type { Status } from "../models/Status";
 
 interface ToolbarProps {
   scene: SceneState;
   uvMapDataURL: string;
-  onLoadScene: (scene: SceneState) => void;
+  onLoadScene: (scene: SceneState) => boolean;
+  onStatus: (status:Status) => void;
 }
 
-const Toolbar: React.FC<ToolbarProps> = ({ scene, onLoadScene, uvMapDataURL }) => {
+const Toolbar: React.FC<ToolbarProps> = ({ scene, uvMapDataURL, onLoadScene, onStatus }) => {
   const [jsonInput, setJsonInput] = useState("");
-  const [description, setDescription] = useState(scene.description || "");
   const [includeTexture, setIncludeTexture] = useState(false);
 
   const handleImportScene = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -20,20 +21,27 @@ const Toolbar: React.FC<ToolbarProps> = ({ scene, onLoadScene, uvMapDataURL }) =
 
     const reader = new FileReader();
     reader.onload = () => {
-      try {
-        const importedScene = deserializeScene(reader.result as string);
-        onLoadScene(importedScene);
-      } catch (e) {
-        console.error("Invalid scene JSON", e);
-      }
+      handleImportSceneFromText(reader.result as string);
     };
     reader.readAsText(file);
   };
 
+  const handleImportSceneFromText = (jsonInput: string) =>
+  {
+    try {
+      const scene = deserializeScene(jsonInput)
+      if (onLoadScene(scene)) {
+        onStatus({message: "Import scene successfully."});
+      }
+      
+    } catch (e) {
+      onStatus({message: "Invalid scene JSON", type: "error"});
+    }     
+  }
+
   const handleExportScene = () => {
     const exportData = serializeScene({
       ...scene,
-      description,
       texture: includeTexture ? scene.texture : undefined
     });
     const blob = new Blob([exportData], { type: "application/json" });
@@ -44,19 +52,11 @@ const Toolbar: React.FC<ToolbarProps> = ({ scene, onLoadScene, uvMapDataURL }) =
   };
 
   const handleUploadScene = () => {
-    uploadScene({ ...scene, description });
+    uploadScene(scene, onStatus);
   };
 
   return (
-    <div>
-      <div className="region">
-        <div className="header">Customization description:</div>
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Describe your customization"
-        />
-      </div>
+    <div className="toolbar">
       <div className="region">
         <div className="header">Import customization from file:</div>
         <input type="file" accept="application/json" onChange={handleImportScene} />
@@ -70,7 +70,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ scene, onLoadScene, uvMapDataURL }) =
             placeholder="Paste scene JSON here"
           />
         </div>
-        <button onClick={() => onLoadScene(deserializeScene(jsonInput))}>
+        <button onClick={() => handleImportSceneFromText(jsonInput)}>
           Load Scene
         </button>
       </div>
@@ -102,8 +102,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ scene, onLoadScene, uvMapDataURL }) =
               link.download = "uvmap.png";
               link.click();
             }
-          }}
-        >
+          }}>
           Download UV Map
         </button>
       </div>
