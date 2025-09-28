@@ -139,6 +139,4 @@ export function assignUVsAndGenerateTemplate(
     }
 
     setUvMapDataURL(canvas.toDataURL("image/png"));
-  // your full assignUVsAndGenerateTemplate code here,
-  // with `setUvMapDataURL(canvas.toDataURL("image/png"));` instead of global uvMapDataURL
 }
