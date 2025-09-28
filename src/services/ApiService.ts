@@ -1,4 +1,3 @@
-// src/services/ApiService.ts
 import type { SceneState } from "../models/SceneState";
 import type { Status } from "../models/Status";
 

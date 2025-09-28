@@ -1,6 +1,6 @@
 import React from "react";
 import type { SceneState } from "../models/SceneState";
-import type { Status, StatusType } from "../models/Status";
+import type { Status } from "../models/Status";
 
 interface ControlsPanelProps {
   scene: SceneState;

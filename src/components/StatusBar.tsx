@@ -1,7 +1,5 @@
-// StatusBar.tsx
 import React from "react";
 import type { Status } from "../models/Status";
-
 
 interface StatusBarProps extends Status {
 }
