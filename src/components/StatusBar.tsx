@@ -4,7 +4,7 @@ import type { Status } from "../models/Status";
 interface StatusBarProps extends Status {
 }
 
-const StatusBar: React.FC<StatusBarProps> = ({ message, type = "info" }) => {
+const StatusBar: React.FC<StatusBarProps> = ({ message, type }) => {
   const getColor = () => {
     switch (type) {
       case "error": return "#ff4d4f";

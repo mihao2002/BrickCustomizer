@@ -36,10 +36,12 @@ const Viewer: React.FC<ViewerProps> = ({
   useEffect(() => {
     if (!mountRef.current) return;
 
+    // create scene
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(background);
     sceneRef.current = scene;
 
+    // setup camera
     const camera = new THREE.PerspectiveCamera(
       75,
       mountRef.current.clientWidth / mountRef.current.clientHeight,
@@ -49,21 +51,23 @@ const Viewer: React.FC<ViewerProps> = ({
     camera.position.set(150, 150, 150);
     cameraRef.current = camera;
 
+    // setup renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
     mountRef.current.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
+    // setup controls
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.update();
 
-    // lights
+    // setup lights
     scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1.2));
     const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
     dirLight.position.set(100, 200, 100).normalize();
     scene.add(dirLight);
 
-    // animation loop
+    // setup animation loop
     function animate() {
       controls.update();
       renderer.render(scene, camera);
@@ -71,6 +75,7 @@ const Viewer: React.FC<ViewerProps> = ({
     }
     animate();
 
+    // handle resize
     function onResize() {
       if (!mountRef.current || !rendererRef.current || !cameraRef.current) return;
       camera.aspect = mountRef.current.clientWidth / mountRef.current.clientHeight;
@@ -83,7 +88,7 @@ const Viewer: React.FC<ViewerProps> = ({
       window.removeEventListener("resize", onResize);
       mountRef.current?.removeChild(renderer.domElement);
     };
-  }, []); // run once only
+  }, []);
 
   // load model when modelPath changes
   useEffect(() => {
@@ -103,6 +108,7 @@ const Viewer: React.FC<ViewerProps> = ({
     loader.load(
       modelPath,
       (group) => {
+        // create a merged mesh
         const geometries: THREE.BufferGeometry[] = [];
         group.traverse((child) => {
           if (child instanceof THREE.Mesh) {
@@ -112,9 +118,11 @@ const Viewer: React.FC<ViewerProps> = ({
         });
 
         const mergedGeometry = mergeGeometries(geometries, true);
+
+        // create material
         const material = new THREE.MeshStandardMaterial();
 
-        // Patch shader
+        // patch shader to handle possible texture
         material.onBeforeCompile = (shader) => {
           shader.fragmentShader = shader.fragmentShader.replace(
             '#include <map_fragment>',
@@ -132,11 +140,13 @@ const Viewer: React.FC<ViewerProps> = ({
 
         updateMaterial(material, color, transparent, texture);
 
+        // create mesh
         const mesh = new THREE.Mesh(mergedGeometry, material);
         mesh.rotation.x = Math.PI;
         sceneRef.current!.add(mesh);
         meshRef.current = mesh;
 
+        // generate UV
         assignUVsAndGenerateTemplate(mesh, (uvMapDataURL) =>
           onMeshReady(mesh, uvMapDataURL)
         );
@@ -152,16 +162,15 @@ const Viewer: React.FC<ViewerProps> = ({
   // update material when color / transparency / texture change
   useEffect(() => {
     if (!meshRef.current) return;
-    const material = meshRef.current.material as THREE.MeshStandardMaterial;
 
+    const material = meshRef.current.material as THREE.MeshStandardMaterial;
     updateMaterial(material, color, transparent, texture);
   }, [color, transparent, texture]);
 
   // update background
   useEffect(() => {
-    if (sceneRef.current) {
-      sceneRef.current.background = new THREE.Color(background);
-    }
+    if (!sceneRef.current) return;
+    sceneRef.current.background = new THREE.Color(background);
   }, [background]);
 
   return <div ref={mountRef} style={{ flex: 1 }} />;
@@ -173,13 +182,13 @@ export function updateMaterial(
   transparent: boolean,
   texture?: string
 ) {
-  // Base color & transparency
+  // base color & transparency
   material.color.set(color);
   material.opacity = transparent ? 0.5 : 1;
   material.transparent = transparent;
   material.side = transparent ? THREE.DoubleSide : THREE.FrontSide;
 
-  // Texture handling
+  // texture handling
   if (texture) {
     const textureLoader = new THREE.TextureLoader();
     material.map = textureLoader.load((texture), (tex) => {
@@ -191,7 +200,7 @@ export function updateMaterial(
     material.map = null;
   }
 
-  material.needsUpdate = true; // 👈 important, forces recompile
+  material.needsUpdate = true;
 }
 
 export default Viewer;

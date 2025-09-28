@@ -33,6 +33,22 @@ export function assignUVsAndGenerateTemplate(
         bottom: { x: W,       y: W + H, w: L, h: W }
     };
 
+    /*
+    UV Map Layout (based on assignUVsAndGenerateTemplate):
+
+     <-  W  -><-     L    -><-  W  -><-    L    ->
+    ^         ┌────────────┐
+    W         │    TOP     │
+    v         │            │
+    ^┌────────┬────────────┬────────┬────────────┐
+    H│  LEFT  │   FRONT    │  RIGHT │    BACK    │
+    v└────────┴────────────┴────────┴────────────┘
+    ^         │            │
+    W         │   BOTTOM   │
+    v         └────────────┘
+    */
+
+    // map a vertex to its UV
     const mappers: Record<ViewName, (v: THREE.Vector3) => THREE.Vector2> = {
         top:    (v: THREE.Vector3) => new THREE.Vector2(regions.top.x + (v.x - box.min.x), regions.top.y + (W - (v.z - box.min.z))),
         bottom: (v: THREE.Vector3) => new THREE.Vector2(regions.bottom.x + (v.x - box.min.x), regions.bottom.y + (v.z - box.min.z)),
@@ -42,6 +58,7 @@ export function assignUVsAndGenerateTemplate(
         right:  (v: THREE.Vector3) => new THREE.Vector2(regions.right.x + (W - (box.max.z - v.z)), regions.right.y + (H - (v.y - box.min.y)))
     };
 
+    // reference point for a vertex, which is the start of the raycast
     const referencePoints: Record<ViewName, (v: THREE.Vector3) => THREE.Vector3> = {
         top:    (v: THREE.Vector3) => new THREE.Vector3(v.x, box.max.y + 1, v.z),
         bottom: (v: THREE.Vector3) => new THREE.Vector3(v.x, box.min.y - 1, v.z),
@@ -76,7 +93,7 @@ export function assignUVsAndGenerateTemplate(
             view = normal.x > 0 ? "right" : "left";
         }
 
-        // Raycast for each vertex to detect exterior
+        // raycast for each vertex to detect exterior
         const vertices = [v0, v1, v2];
         let isExterior = false;
         for (let v of vertices) {
@@ -84,13 +101,16 @@ export function assignUVsAndGenerateTemplate(
             const dir = new THREE.Vector3().subVectors(v, refPoint).normalize();
             raycaster.set(refPoint, dir);
             const intersects = raycaster.intersectObject(mesh, true);
+            // a vertex is on exterior if the ray hit it first.
             if (intersects.length &&
                 Math.abs(intersects[0].point.distanceTo(refPoint) - v.distanceTo(refPoint)) < 0.001) {
                 isExterior = true;
+                // a face is considered as exterior as long as one of its vertex is exterior
                 break;
             }
         }
 
+        // only set UV for exterior face
         if (!isExterior) {
             uv.set([0, 0, 0, 0, 0, 0], i * 2);
             continue;
@@ -106,6 +126,11 @@ export function assignUVsAndGenerateTemplate(
 
     mesh.geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
 
+    const dataURL = generateUVTemplateCanvas(uv, texW, texH, scale);
+    setUvMapDataURL(dataURL);
+}
+
+function generateUVTemplateCanvas(uv: Float32Array, texW: number, texH: number, scale: number):string {
     const canvas = document.createElement("canvas");
     canvas.width = texW * scale;
     canvas.height = texH * scale;
@@ -121,10 +146,10 @@ export function assignUVsAndGenerateTemplate(
     ctx.strokeStyle = "#00AAFF";
     ctx.lineWidth = 1;
 
-    for (let i = 0; i < pos.count; i += 3) {
-        const uv0 = new THREE.Vector2(uv[i * 2] * texW, uv[i * 2 + 1] * texH);
-        const uv1 = new THREE.Vector2(uv[(i + 1) * 2] * texW, uv[(i + 1) * 2 + 1] * texH);
-        const uv2 = new THREE.Vector2(uv[(i + 2) * 2] * texW, uv[(i + 2) * 2 + 1] * texH);
+    for (let i = 0; i < uv.length; i += 6) {
+        const uv0 = new THREE.Vector2(uv[i] * texW, uv[i + 1] * texH);
+        const uv1 = new THREE.Vector2(uv[i + 2] * texW, uv[i + 3] * texH);
+        const uv2 = new THREE.Vector2(uv[i + 4] * texW, uv[i + 5] * texH);
 
         if (uv0.equals(new THREE.Vector2(0, 0)) &&
             uv1.equals(new THREE.Vector2(0, 0)) &&
@@ -138,5 +163,5 @@ export function assignUVsAndGenerateTemplate(
         ctx.stroke();
     }
 
-    setUvMapDataURL(canvas.toDataURL("image/png"));
+    return canvas.toDataURL("image/png");
 }

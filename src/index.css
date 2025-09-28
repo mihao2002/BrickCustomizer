@@ -1,21 +1,29 @@
 .region {
-  margin:10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  margin-right: 10px;
+  padding: 10px;
+  background-color: #e5e5e5;
+  border-radius: 8px;
   .header {
     font-weight: bold;
     text-decoration: underline;
-    margin-top: 10px;
   }
 }
 
 .controlspanel {
+  margin-top: 3px;
   margin-bottom: 10px;
   .description {
     width: 200px;
   }
 }
 
-.toolbar {
-  margin-top: 30px;
+.title {
+  font-weight: bold;
+  background-color: #3498fd;
+  color: white;
+  margin-top: 0px;
 }
 
 .status {

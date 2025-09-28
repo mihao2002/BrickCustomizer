@@ -8,7 +8,7 @@ interface ControlsPanelProps {
   onColorChange: (color: string) => void;
   onBackgroundChange: (color: string) => void;
   onTransparentChange: (transparent: boolean) => void;
-  onTextureUpload: (texture?: string) => void;
+  onTextureChange: (texture?: string) => void;
   onModelChange: (model: string) => void;
   onStatus: (status:Status) => void;
 }
@@ -19,17 +19,16 @@ const ControlsPanel: React.FC<ControlsPanelProps> = ({
   onColorChange,
   onBackgroundChange,
   onTransparentChange,
-  onTextureUpload,
+  onTextureChange,
   onModelChange,
   onStatus
 }) => {
-  const handleTextureUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleTextureUpload = (file?: File) => {
     if (!file) return;
 
     const reader = new FileReader();
     reader.onload = () => {
-      onTextureUpload(reader.result as string);
+      onTextureChange(reader.result as string);
       onStatus({message:`Texture loaded from ${file.name}`})
     };
     reader.readAsDataURL(file);
@@ -88,7 +87,6 @@ const ControlsPanel: React.FC<ControlsPanelProps> = ({
         </label>
       </span>
       <span className="region">
-
         <label className="header">
           Texture:
           <input
@@ -96,19 +94,18 @@ const ControlsPanel: React.FC<ControlsPanelProps> = ({
             type="file"
             accept="image/*"
             style={{ display: "none" }}
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) handleTextureUpload(e);
-            }}
+            onChange={(e) => handleTextureUpload(e.target.files?.[0])}
           />
           <input
             type="checkbox"
             checked={!!scene.texture}
             onChange={(e) => {
+              const fileInput = document.getElementById("textureInput") as HTMLInputElement;
               if (e.target.checked && !scene.texture) {
-                document.getElementById("textureInput")?.click();
+                fileInput.click();
               } else if (!e.target.checked) {
-                onTextureUpload(undefined);
+                onTextureChange(undefined);
+                fileInput.value = "";
               }
             }}
           />

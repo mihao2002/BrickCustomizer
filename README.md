@@ -32,7 +32,13 @@ npm run preview
 ```bash
 npm run dev
 ```
-The app will be available at http://localhost:5173.
+The app will be available at http://localhost:5173/BrickCustomizer/.
+
+### GitHub Pages Deployment
+```bash
+npm run deploy
+```
+The app will be available at https://mihao2002.github.io/BrickCustomizer/.
 
 ### Usage
 Toolbar
@@ -62,5 +68,8 @@ src/
   services/       # Service API
   utils/          # UV mapping, validation helpers
   main.tsx        # Main app
+public/
+  LDraw           # LDraw part library
+  sampletextures  # Sample textures
 ```
 

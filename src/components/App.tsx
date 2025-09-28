@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import Viewer from "./Viewer";
 import ControlsPanel from "./ControlsPanel";
 import Toolbar from "./Toolbar";
-import type { SceneState } from "../models/SceneState";
 import StatusBar from "./StatusBar";
-import type { Status } from "../models/Status";
 import { validateSceneState } from "../utils/SceneUtils";
+import type { SceneState } from "../models/SceneState";
+import type { Status } from "../models/Status";
 
 const App: React.FC = () => {
   const [scene, _setScene] = useState<SceneState>({
@@ -17,10 +17,7 @@ const App: React.FC = () => {
     texture: undefined
   });
 
-  const [uvMapDataURL, setUvMapDataURL] = useState<string>("");
-
-  const [status, setStatus] = useState<Status>({ message: "", type: "info" });
-
+  // Set scene with validation
   const setScene = (scene: SceneState):boolean => {
     try {
       validateSceneState(scene);
@@ -32,6 +29,9 @@ const App: React.FC = () => {
       return false;
     }   
   };
+
+  const [uvMapDataURL, setUvMapDataURL] = useState<string>("");
+  const [status, setStatus] = useState<Status>({ message: "", type: "info" });
 
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "row", width: "100vw", height: "100vh" }}>
@@ -48,7 +48,7 @@ const App: React.FC = () => {
           onColorChange={(color) => setScene({ ...scene, color })}
           onBackgroundChange={(background) => setScene({ ...scene, background })}
           onTransparentChange={(transparent) => setScene({ ...scene, transparent })}
-          onTextureUpload={(texture) => setScene({ ...scene, texture })}
+          onTextureChange={(texture) => setScene({ ...scene, texture })}
           onModelChange={(modelPath) => setScene({ ...scene, model: modelPath })}
           onStatus={(status) => setStatus(status)}
         />

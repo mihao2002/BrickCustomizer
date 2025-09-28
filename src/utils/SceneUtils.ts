@@ -1,4 +1,3 @@
-// src/services/SceneService.ts
 import type { SceneState } from "../models/SceneState";
 
 export function serializeScene(scene: SceneState): string {
